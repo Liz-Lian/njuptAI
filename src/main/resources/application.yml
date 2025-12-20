@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: llm-assistant-backend
+
+  # 1. ?????
+  datasource:
+    url: jdbc:mysql://localhost:3306/llm_assistant?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+    username: root          # ?? MySQL ??
+    password: ${SPRING_DATASOURCE_PASSWORD:} # ???????? MySQL ??
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # 2. ?? AI ??
+  ai:
+    zhipuai:
+      api-key: ${SPRING_AI_ZHIPUAI_API_KEY:} # ???????????? API Key
+      chat:
+        options:
+          model: glm-4-flash # ???? flash (????)????? glm-4
+          temperature: 0.7   # 0.7 ?????1.0 ???
+
+# MyBatis ??
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true # ??????? user_name ?? Java ? userName
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # ?????? SQL?????

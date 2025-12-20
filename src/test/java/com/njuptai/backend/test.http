@@ -1,0 +1,6 @@
+POST http://localhost:8080/chat/send
+Content-Type: application/json
+
+{
+  "message": "你好，请介绍一下你自己"
+}
