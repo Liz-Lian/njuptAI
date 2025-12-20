@@ -8,7 +8,7 @@ function App() {
   // ----------------------------------------------------
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
-    { role: "ai", content: "你好呀！我是小莲，代码写累了吗？🌸" },
+    { role: "ai", content: "你好呀！我是柚子。🌸" },
   ]);
   const [isLoading, setIsLoading] = useState(false);
 

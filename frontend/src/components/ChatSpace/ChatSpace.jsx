@@ -2,7 +2,7 @@ import Header from "../Header";
 import ChatContent from "./ChatContent";
 import ChatInput from "./ChatInput";
 
-function ChatSpace(
+function ChatSpace({
   isSidebarOpen,
   setIsSidebarOpen,
   messages,
@@ -10,8 +10,8 @@ function ChatSpace(
   setInput,
   sendMessage,
   isLoading,
-  messagesEndRef
-) {
+  messagesEndRef,
+}) {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <Header
