@@ -1,6 +1,6 @@
 import React from "react";
 import HistoryItem from "./HistoryItem";
-import User from "./User";
+import User from "../User";
 
 // 接收 isOpen 属性，由父组件控制开还是关
 const Sidebar = ({

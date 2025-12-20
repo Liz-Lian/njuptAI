@@ -4,8 +4,10 @@ import com.njuptai.backend.entity.ChatMessage;
 import com.njuptai.backend.mapper.ChatMessageMapper;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,10 +18,12 @@ public class ChatService {
 
     private final ChatClient chatClient;
     private final ChatMessageMapper chatMessageMapper;
+    private final VectorStore vectorStore;
 
     // 构造函数
-    public ChatService(ChatClient.Builder builder, ChatMessageMapper chatMessageMapper) {
+    public ChatService(ChatClient.Builder builder, ChatMessageMapper chatMessageMapper, VectorStore vectorStore) {
         this.chatMessageMapper = chatMessageMapper;
+        this.vectorStore = vectorStore;
 
         // 1. 按照官方文档：构建一个“消息窗口记忆”，默认保存在内存里
         // maxMessages(10) 表示只保留最近 10 条记录，防止 token 爆炸
@@ -55,12 +59,25 @@ public class ChatService {
 
         String conversationId = sessionId;
 
+        // ✅ 自定义 RAG 提示词模板 (防止 AI 用英文回复 context)
+        String ragPrompt = """
+            请根据以下【参考资料】回答用户的问题。如果资料中没有答案，请使用你自己的知识回答。
+            
+            【参考资料】：
+            {question_answer_context}
+            
+            【用户问题】：
+            {user_text}
+            """;
+
         // 2. 呼叫 AI
         // ❌ 以前的写法：.advisors(new ...Advisor(...))
         // ✅ 官方文档新写法：通过 param 传入 conversationId，Advisor 会自动去查内存
         String aiResponse = chatClient.prompt()
                 .user(userMessage)
-                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .advisors(a -> a
+                        .param(ChatMemory.CONVERSATION_ID, conversationId)
+                        .advisors(QuestionAnswerAdvisor.builder(vectorStore).build()))
                 .call()
                 .content();
 
