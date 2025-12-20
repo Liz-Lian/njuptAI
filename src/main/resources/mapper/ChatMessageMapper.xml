@@ -23,4 +23,21 @@
         SELECT * FROM chat_message WHERE session_id = #{sessionId} ORDER BY create_time ASC
     </select>
 
+    <select id="selectSessionList" resultType="com.njuptai.backend.entity.ChatMessage">
+        SELECT
+            session_id,
+            MIN(create_time) as create_time,
+            (SELECT user_message FROM chat_message cm2 WHERE cm2.session_id = cm1.session_id ORDER BY create_time ASC LIMIT 1) as user_message
+        FROM chat_message cm1
+        WHERE user_id = #{userId}
+        GROUP BY session_id
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectBySessionId" resultType="com.njuptai.backend.entity.ChatMessage">
+        SELECT * FROM chat_message
+        WHERE session_id = #{sessionId}
+        ORDER BY create_time ASC
+    </select>
+
 </mapper>

@@ -1,13 +1,15 @@
 package com.njuptai.backend.controller;
 
+import com.njuptai.backend.entity.ChatMessage;
 import com.njuptai.backend.service.ChatService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/chat")
-// 允许跨域，方便后面写前端时直接调用
-@CrossOrigin(origins = "*")
+
 public class ChatController {
 
     private final ChatService chatService;
@@ -18,16 +20,30 @@ public class ChatController {
 
     @PostMapping("/send")
     public Map<String, String> chat(@RequestBody Map<String, String> payload) {
-        // 1. 获取前端发来的消息
         String message = payload.get("message");
-
-        // 2. 暂时把用户ID写死为 1L (等以后做登录了再改)
+        String sessionId = payload.get("sessionId"); // ✅ 接收前端传来的 sessionId
         Long userId = 1L;
 
-        // 3. 调用 Service 获得 AI 回答
-        String response = chatService.chat(userId, message);
+        // 调用 Service
+        String rawResponse = chatService.chat(userId, sessionId, message);
 
-        // 4. 返回 JSON 格式给前端
-        return Map.of("response", response);
+        // 拆解 Service 返回的 "回复||sessionId"
+        String[] parts = rawResponse.split("\\|\\|");
+        String aiResponse = parts[0];
+        String newSessionId = parts.length > 1 ? parts[1] : sessionId;
+
+        return Map.of("response", aiResponse, "sessionId", newSessionId);
+    }
+    // 2. ✅ 获取会话列表接口
+    @GetMapping("/history")
+    public List<ChatMessage> getHistory() {
+        Long userId = 1L;
+        return chatService.getHistoryList(userId);
+    }
+
+    // 3. ✅ 获取某个会话详情接口
+    @GetMapping("/session/{sessionId}")
+    public List<ChatMessage> getSessionDetail(@PathVariable String sessionId) {
+        return chatService.getSessionMessages(sessionId);
     }
 }

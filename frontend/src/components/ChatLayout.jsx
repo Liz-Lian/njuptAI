@@ -7,7 +7,17 @@ import Sidebar from "./Sidebar/Sidebar";
 import ChatSpace from "./ChatSpace/ChatSpace";
 
 // 这个组件只负责：长什么样、怎么排版、怎么滚动
-const ChatLayout = ({ messages, input, setInput, sendMessage, isLoading }) => {
+const ChatLayout = ({
+  messages,
+  input,
+  setInput,
+  sendMessage,
+  isLoading,
+  historyList,
+  onSelectSession,
+  onNewChat,
+  currentSessionId,
+}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   // 滚动条的逻辑属于“视觉交互”，所以放在 Layout 里最合适
   const messagesEndRef = useRef(null);
@@ -26,6 +36,10 @@ const ChatLayout = ({ messages, input, setInput, sendMessage, isLoading }) => {
       <Sidebar
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
+        historyList={historyList} // 列表数据
+        onSelectSession={onSelectSession} // 点击事件
+        onNewChat={onNewChat} // 新建事件
+        currentSessionId={currentSessionId} // 当前选中的ID（用来高亮）
       />
       <ChatSpace
         isSidebarOpen={isSidebarOpen}

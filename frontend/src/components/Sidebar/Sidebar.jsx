@@ -3,14 +3,14 @@ import HistoryItem from "./HistoryItem";
 import User from "./User";
 
 // 接收 isOpen 属性，由父组件控制开还是关
-const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
-  const historyItems = [
-    { id: 1, title: "关于 Java 并发的讨论" },
-    { id: 2, title: "SpringBoot 报错调试" },
-    { id: 3, title: "React 组件拆分建议" },
-    { id: 4, title: "中午吃什么？" },
-  ];
-
+const Sidebar = ({
+  isSidebarOpen,
+  setIsSidebarOpen,
+  historyList,
+  onSelectSession,
+  onNewChat,
+  currentSessionId,
+}) => {
   return (
     <div
       className={`
@@ -42,6 +42,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       {/* 内部容器：设置 min-w-64 防止文字换行导致的排版崩坏 */}
       <div className=" flex justify-center">
         <button
+          onClick={onNewChat}
           className={`
             flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 
             font-medium rounded-xl transition-all duration-300 border border-indigo-200 border-dashed
@@ -88,7 +89,13 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         </div>
 
         {isSidebarOpen &&
-          historyItems.map((item) => <HistoryItem key={item.id} item={item} />)}
+          historyList.map((item) => (
+            <HistoryItem
+              key={item.id}
+              item={item}
+              onSelectSession={onSelectSession}
+            />
+          ))}
       </div>
 
       {/* <User isSidebarOpen={isSidebarOpen} /> */}

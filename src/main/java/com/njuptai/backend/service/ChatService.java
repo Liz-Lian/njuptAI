@@ -9,6 +9,7 @@ import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class ChatService {
@@ -36,7 +37,21 @@ public class ChatService {
     /**
      * 核心业务逻辑
      */
-    public String chat(Long userId, String userMessage) {
+    // ✅ 获取历史列表
+    public List<ChatMessage> getHistoryList(Long userId) {
+        return chatMessageMapper.selectSessionList(userId);
+    }
+
+    // ✅ 获取某次对话详情
+    public List<ChatMessage> getSessionMessages(String sessionId) {
+        return chatMessageMapper.selectBySessionId(sessionId);
+    }
+
+    public String chat(Long userId, String sessionId, String userMessage) {
+        // 如果前端没传 sessionId (是新对话)，就生成一个新的 UUID
+        if (sessionId == null || sessionId.isEmpty()) {
+            sessionId = java.util.UUID.randomUUID().toString();
+        }
 
         // 1. 准备 Conversation ID (官方文档要求的 conversationId)
         // 我们用 userId 来区分不同的人，也可以拼上 "session_"
@@ -52,7 +67,6 @@ public class ChatService {
                 .content();
 
         // 3. 存档到 MySQL (这部分逻辑不变，为了持久化存储)
-        String sessionId = "session_default_" + userId;
         ChatMessage message = ChatMessage.builder()
                 .userId(userId)
                 .sessionId(sessionId)
@@ -63,6 +77,9 @@ public class ChatService {
 
         chatMessageMapper.insert(message);
 
-        return aiResponse;
+        // ✅ 返回 sessionId，因为如果是新对话，前端需要知道生成了啥
+        return aiResponse + "||" + sessionId;
+        // ⚠️ 小技巧：为了省事，我把 sessionId 拼在回答后面返回，前端再拆开。
+        // (规范做法是封装一个对象返回，但咱们先怎么快怎么来)
     }
 }

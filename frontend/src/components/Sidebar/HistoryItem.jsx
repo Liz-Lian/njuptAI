@@ -1,8 +1,28 @@
-function HistoryItem({ item }) {
+function HistoryItem({
+  item,
+  onSelectSession,
+  isSidebarOpen,
+  currentSessionId,
+}) {
   return (
     <button
       key={item.id}
-      className="w-full text-left px-3 py-3 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition-colors flex items-center gap-3 group whitespace-nowrap"
+      onClick={() => onSelectSession(item.id)}
+      className={`
+                w-full flex items-center rounded-lg text-sm transition-colors group
+                ${
+                  isSidebarOpen
+                    ? "px-3 py-3 gap-3 justify-start"
+                    : "p-3 justify-center"
+                }
+                /* 选中高亮逻辑 */
+                ${
+                  currentSessionId === item.id
+                    ? "bg-gray-100 text-gray-900 font-medium" // 选中历史
+                    : "text-gray-600 hover:bg-gray-50 hover:text-indigo-600" // 没选中
+                }
+              `}
+      title={!isSidebarOpen ? item.title : ""}
     >
       <svg
         className="w-4 h-4 text-gray-400 group-hover:text-indigo-500 flex-shrink-0"
