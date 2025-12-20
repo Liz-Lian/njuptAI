@@ -53,9 +53,7 @@ public class ChatService {
             sessionId = java.util.UUID.randomUUID().toString();
         }
 
-        // 1. 准备 Conversation ID (官方文档要求的 conversationId)
-        // 我们用 userId 来区分不同的人，也可以拼上 "session_"
-        String conversationId = String.valueOf(userId);
+        String conversationId = sessionId;
 
         // 2. 呼叫 AI
         // ❌ 以前的写法：.advisors(new ...Advisor(...))
