@@ -4,24 +4,28 @@ server:
 spring:
   application:
     name: llm-assistant-backend
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB      # 🟢 单个文件最大限制 (比如改成 50MB)
+      max-request-size: 100MB  # 🟢 一次请求所有文件的总大小限制 (比如改成 100MB)
 
-  # 1. ?????
   datasource:
     url: jdbc:mysql://localhost:3306/llm_assistant?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
-    username: root          # ?? MySQL ??
-    password: ${SPRING_DATASOURCE_PASSWORD:} # ???????? MySQL ??
+    username: root
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  # 2. ?? AI ??
+
   ai:
     zhipuai:
       api-key: ${SPRING_AI_ZHIPUAI_API_KEY:} # ???????????? API Key
       chat:
         options:
-          model: glm-4-flash # ???? flash (????)????? glm-4
-          temperature: 0.7   # 0.7 ?????1.0 ???
+          model: glm-4-flash
+          temperature: 0.7
 
-# MyBatis ??
+
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   configuration:
