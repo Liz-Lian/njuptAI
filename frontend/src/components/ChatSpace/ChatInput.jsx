@@ -1,7 +1,14 @@
 import axios from "axios";
 import React, { useRef, useState } from "react";
 
-const ChatInput = ({ input, setInput, sendMessage, isLoading }) => {
+const ChatInput = ({
+  input,
+  setInput,
+  sendMessage,
+  isLoading,
+  sessionId,
+  onUploadSuccess,
+}) => {
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -19,11 +26,9 @@ const ChatInput = ({ input, setInput, sendMessage, isLoading }) => {
 
     setIsUploading(true);
     const formData = new FormData();
-
-    // 把所有文件塞进 FormData
-    files.forEach((file) => {
-      formData.append("files", file);
-    });
+    files.forEach((file) => formData.append("files", file));
+    // 👇 把当前的 sessionId 传给后端 (如果是 null 也没事，后端会生成)
+    formData.append("sessionId", sessionId || "");
 
     try {
       // 发请求
@@ -34,7 +39,13 @@ const ChatInput = ({ input, setInput, sendMessage, isLoading }) => {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      alert(`📄 ${res.data.message}`);
+      // 🎉 如果后端返回了新的 sessionId (说明是新对话首次上传)，通知父组件更新
+      if (res.data.sessionId && res.data.sessionId !== sessionId) {
+        onUploadSuccess(res.data.sessionId);
+      } else {
+        onUploadSuccess(sessionId); // 只是刷新文件列表
+      }
+      alert("上传成功！");
     } catch (error) {
       console.error(error);
       alert("上传失败，请检查文件大小限制。");

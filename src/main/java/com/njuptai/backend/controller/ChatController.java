@@ -1,6 +1,8 @@
 package com.njuptai.backend.controller;
 
 import com.njuptai.backend.entity.ChatMessage;
+import com.njuptai.backend.entity.SessionFile;
+import com.njuptai.backend.mapper.SessionFileMapper;
 import com.njuptai.backend.service.ChatService;
 import com.njuptai.backend.service.RagService;
 import org.springframework.core.io.InputStreamResource;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -18,10 +21,12 @@ public class ChatController {
 
     private final ChatService chatService;
     private final RagService ragService;
+    private final SessionFileMapper sessionFileMapper;
 
-    public ChatController(ChatService chatService, RagService ragService) {
+    public ChatController(ChatService chatService, RagService ragService, SessionFileMapper sessionFileMapper) {
         this.chatService = chatService;
         this.ragService = ragService;
+        this.sessionFileMapper = sessionFileMapper;
     }
 
     @PostMapping("/send")
@@ -54,30 +59,66 @@ public class ChatController {
         return chatService.getSessionMessages(sessionId);
     }
 
-    // ✅ 新增：多文件上传接口
     @PostMapping("/upload")
-    public Map<String, String> uploadFiles(@RequestParam("files") MultipartFile[] files) {
+    public Map<String, String> uploadFiles(
+            @RequestParam("files") MultipartFile[] files,
+            @RequestParam(value = "sessionId", required = false) String sessionId
+    ) {
+        if (sessionId == null || sessionId.isEmpty() || "null".equals(sessionId)) {
+            sessionId = java.util.UUID.randomUUID().toString();
+        }
+
         int successCount = 0;
         try {
             for (MultipartFile file : files) {
-                // 转换文件流，并手动设置文件名 (Tika 需要文件名来判断类型)
+                // 1. ⏳ 先存入 MySQL，为了获取自增的 ID
+                SessionFile sessionFile = SessionFile.builder()
+                        .sessionId(sessionId)
+                        .fileName(file.getOriginalFilename())
+                        .createTime(LocalDateTime.now())
+                        .build();
+
+                // 执行 insert 后，MyBatis 会把生成的 ID 回填到 sessionFile 对象里
+                sessionFileMapper.insert(sessionFile);
+                Long fileId = sessionFile.getId(); // 拿到 ID 了！
+
+                // 2. ⚡️ 再存入向量库 (传入刚才拿到的 fileId)
                 InputStreamResource resource = new InputStreamResource(file.getInputStream()) {
                     @Override
-                    public String getFilename() {
-                        return file.getOriginalFilename();
-                    }
+                    public String getFilename() { return file.getOriginalFilename(); }
                 };
 
-                // 调用 Service 存入向量库
-                ragService.importDocument(resource);
+                // 调用 RagService
+                ragService.importDocument(resource, sessionId, fileId);
+
                 successCount++;
             }
-
-            return Map.of("status", "success", "message", "成功学习了 " + successCount + " 个文档！");
-
+            return Map.of("status", "success", "message", "上传成功", "sessionId", sessionId);
         } catch (IOException e) {
             e.printStackTrace();
-            return Map.of("status", "error", "message", "上传失败：" + e.getMessage());
+            return Map.of("status", "error", "message", "上传失败");
         }
+    }
+
+    // 删除接口也变得超级简单
+    @DeleteMapping("/files/{id}")
+    public Map<String, String> deleteFile(@PathVariable Long id) {
+        try {
+            // 1. 调用 RagService 根据 ID 删除向量
+            ragService.deleteByFileId(id);
+
+            // 2. 删除数据库记录
+            sessionFileMapper.deleteById(id);
+
+            return Map.of("status", "success", "message", "删除成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("status", "error", "message", "删除失败");
+        }
+    }
+    // ✅ 新增接口：获取某会话的文件列表
+    @GetMapping("/files")
+    public List<SessionFile> getSessionFiles(@RequestParam("sessionId") String sessionId) {
+        return sessionFileMapper.selectBySessionId(sessionId);
     }
 }

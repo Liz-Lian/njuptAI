@@ -6,6 +6,7 @@ function App() {
   const [input, setInput] = useState("");
   // 当前的会话 ID (如果是 null 表示正在新建)
   const [sessionId, setSessionId] = useState(null);
+  const [sessionFiles, setSessionFiles] = useState([]);
 
   // 当前显示的消息列表
   const [messages, setMessages] = useState([
@@ -35,9 +36,37 @@ function App() {
     }
   };
 
+  const fetchSessionFiles = async (sid) => {
+    if (!sid) {
+      setSessionFiles([]); // 新对话，清空文件列表
+      return;
+    }
+    try {
+      const res = await axios.get(
+        `http://localhost:8080/chat/files?sessionId=${sid}`
+      );
+      setSessionFiles(res.data);
+    } catch (e) {
+      console.error("加载文件列表失败", e);
+    }
+  };
+
   useEffect(() => {
     fetchHistory();
   }, [messages]); // 每当发完消息，重新刷新一下列表（把最新的置顶）
+
+  useEffect(() => {
+    fetchSessionFiles(sessionId);
+  }, [sessionId]);
+
+  const handleUploadSuccess = (sid) => {
+    if (sessionId !== sid) {
+      // 如果是新对话生成的 ID，先切换过去
+      handleSelectSession(sid);
+    }
+    // 刷新文件列表
+    fetchSessionFiles(sid);
+  };
 
   // ✅ 2. 切换会话 (点击侧边栏)
   const handleSelectSession = async (sid) => {
@@ -63,6 +92,7 @@ function App() {
   const handleNewChat = () => {
     setSessionId(null); // 清空 ID，表示新会话
     setMessages([{ role: "ai", content: "你好！这是一个新的开始。🌸" }]);
+    setSessionFiles([]); // 清空文件列表
   };
 
   // ✅ 4. 发送消息
@@ -99,6 +129,17 @@ function App() {
     }
   };
 
+  // ✅ 回调：当文件上传或删除成功时，刷新列表
+  const handleFileUpdate = (sid) => {
+    // 如果是新会话生成的 ID，先切换 ID
+    if (sid && sid !== sessionId) {
+      setSessionId(sid);
+      fetchHistory(); // 刷新侧边栏
+    }
+    // 刷新文件列表
+    fetchSessionFiles(sid || sessionId);
+  };
+
   return (
     <ChatLayout
       messages={messages}
@@ -111,6 +152,9 @@ function App() {
       onSelectSession={handleSelectSession}
       onNewChat={handleNewChat}
       currentSessionId={sessionId}
+      sessionFiles={sessionFiles} // 👈 传进去
+      onUploadSuccess={handleUploadSuccess} // 👈 传进去
+      onFileDeleted={handleFileUpdate} // 删除成功回调
     />
   );
 }
