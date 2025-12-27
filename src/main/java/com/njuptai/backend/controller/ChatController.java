@@ -1,6 +1,7 @@
 package com.njuptai.backend.controller;
 
 import com.njuptai.backend.entity.ChatMessage;
+import com.njuptai.backend.entity.ChatResponse;
 import com.njuptai.backend.entity.SessionFile;
 import com.njuptai.backend.mapper.SessionFileMapper;
 import com.njuptai.backend.service.ChatService;
@@ -30,20 +31,12 @@ public class ChatController {
     }
 
     @PostMapping("/send")
-    public Map<String, String> chat(@RequestBody Map<String, String> payload) {
+    public ChatResponse chat(@RequestBody Map<String, String> payload) {
         String message = payload.get("message");
         String sessionId = payload.get("sessionId"); // ✅ 接收前端传来的 sessionId
         Long userId = 1L;
 
-        // 调用 Service
-        String rawResponse = chatService.chat(userId, sessionId, message);
-
-        // 拆解 Service 返回的 "回复||sessionId"
-        String[] parts = rawResponse.split("\\|\\|");
-        String aiResponse = parts[0];
-        String newSessionId = parts.length > 1 ? parts[1] : sessionId;
-
-        return Map.of("response", aiResponse, "sessionId", newSessionId);
+        return chatService.chat(userId, sessionId, message);
     }
 
     // 2. ✅ 获取会话列表接口

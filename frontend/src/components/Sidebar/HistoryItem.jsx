@@ -19,13 +19,13 @@ function HistoryItem({
                 ${
                   currentSessionId === item.id
                     ? "bg-gray-100 text-gray-900 font-medium" // 选中历史
-                    : "text-gray-600 hover:bg-gray-50 hover:text-indigo-600" // 没选中
+                    : "text-gray-600 hover:bg-gray-50 hover:text-blue-600" // 没选中
                 }
               `}
       title={!isSidebarOpen ? item.title : ""}
     >
       <svg
-        className="w-4 h-4 text-gray-400 group-hover:text-indigo-500 flex-shrink-0"
+        className="w-4 h-4 text-gray-400 group-hover:text-blue-600 flex-shrink-0"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"

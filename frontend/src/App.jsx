@@ -111,7 +111,7 @@ function App() {
         sessionId: sessionId, // 如果是新对话，这里是 null
       });
 
-      const aiMessage = { role: "ai", content: response.data.response };
+      const aiMessage = { role: "ai", content: response.data.answer };
       setMessages((prev) => [...prev, aiMessage]);
 
       // 如果后端返回了新的 sessionId (说明刚才创建了新会话)，我们要更新状态
