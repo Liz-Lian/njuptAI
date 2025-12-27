@@ -5,7 +5,7 @@ import Header from "./Header";
 import ChatContent from "./ChatSpace/ChatContent";
 import Sidebar from "./Sidebar/Sidebar";
 import ChatSpace from "./ChatSpace/ChatSpace";
-import axios from "axios";
+import { apiClient } from "../api/client";
 
 // 这个组件只负责：长什么样、怎么排版、怎么滚动
 const ChatLayout = ({
@@ -41,7 +41,7 @@ const ChatLayout = ({
     if (!window.confirm("确定要移除这个知识库文档吗？")) return;
 
     try {
-      await axios.delete(`http://localhost:8080/chat/files/${fileId}`);
+      await apiClient.delete(`/chat/files/${fileId}`);
 
       // 通知父组件刷新列表
       if (onFileDeleted) {

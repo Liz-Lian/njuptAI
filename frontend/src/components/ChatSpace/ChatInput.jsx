@@ -1,4 +1,4 @@
-import axios from "axios";
+import { apiClient } from "../../api/client";
 import React, { useRef, useState } from "react";
 
 const ChatInput = ({
@@ -32,13 +32,9 @@ const ChatInput = ({
 
     try {
       // 发请求
-      const res = await axios.post(
-        "http://localhost:8080/chat/upload",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      const res = await apiClient.post("/chat/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       // 🎉 如果后端返回了新的 sessionId (说明是新对话首次上传)，通知父组件更新
       if (res.data.sessionId && res.data.sessionId !== sessionId) {
         onUploadSuccess(res.data.sessionId);

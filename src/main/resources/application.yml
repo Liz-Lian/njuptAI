@@ -11,8 +11,8 @@ spring:
       max-request-size: 100MB  # 🟢 一次请求所有文件的总大小限制 (比如改成 100MB)
 
   datasource:
-    url: jdbc:mysql://localhost:3306/llm_assistant?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
-    username: root
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/llm_assistant?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
     password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
 

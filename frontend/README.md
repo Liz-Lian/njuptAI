@@ -1,16 +1,48 @@
-# React + Vite
+# njuptAI Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+该目录为前端工程（Vite + React + Tailwind），用于调用后端接口完成：
 
-Currently, two official plugins are available:
+- 会话列表/会话详情展示
+- 发送消息
+- 上传文件并进行 RAG
+- 删除会话文件（并触发后端删除向量）
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+更多整体说明见项目根目录 README。
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 环境要求
 
-## Expanding the ESLint configuration
+- Node.js 18+（建议）
+- npm 9+（或 pnpm/yarn 亦可自行调整）
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 本地启动
+
+```bash
+npm install
+npm run dev
+```
+
+默认会在 `http://localhost:5173` 启动。
+
+---
+
+## 后端依赖
+
+请确保后端已启动：`http://localhost:8080`。
+
+前端通过环境变量 `VITE_API_BASE_URL` 配置后端地址：
+
+- 复制示例：将 `frontend/.env.example` 复制为 `frontend/.env.local`
+- 修改为你的后端地址，例如：`VITE_API_BASE_URL=http://localhost:8080`
+
+---
+
+## 构建与预览
+
+```bash
+npm run build
+npm run preview
+```

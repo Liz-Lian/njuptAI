@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { apiClient } from "./api/client";
 import ChatLayout from "./components/ChatLayout";
 
 function App() {
@@ -24,7 +24,7 @@ function App() {
   // ✅ 1. 初始化加载历史会话列表
   const fetchHistory = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/chat/history");
+      const res = await apiClient.get("/chat/history");
       // 后端返回的是 ChatMessage 对象列表，我们需要把它转换成 Sidebar 能用的格式
       const formatted = res.data.map((item) => ({
         id: item.sessionId,
@@ -42,9 +42,7 @@ function App() {
       return;
     }
     try {
-      const res = await axios.get(
-        `http://localhost:8080/chat/files?sessionId=${sid}`
-      );
+      const res = await apiClient.get(`/chat/files?sessionId=${sid}`);
       setSessionFiles(res.data);
     } catch (e) {
       console.error("加载文件列表失败", e);
@@ -73,7 +71,7 @@ function App() {
     setSessionId(sid);
     setIsLoading(true);
     try {
-      const res = await axios.get(`http://localhost:8080/chat/session/${sid}`);
+      const res = await apiClient.get(`/chat/session/${sid}`);
       // 把后端返回的数据库记录，转成前端的消息格式
       const msgs = [];
       res.data.forEach((item) => {
@@ -106,7 +104,7 @@ function App() {
 
     try {
       // 发送时带上 sessionId
-      const response = await axios.post("http://localhost:8080/chat/send", {
+      const response = await apiClient.post("/chat/send", {
         message: input,
         sessionId: sessionId, // 如果是新对话，这里是 null
       });
