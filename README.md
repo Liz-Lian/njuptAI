@@ -133,7 +133,9 @@ npm run dev
 
 ## 配置说明（建议）
 
-当前 `src/main/resources/application.yml` 中包含了数据库账号密码与第三方 API Key 的明文配置。为了避免泄露，建议你在本地用环境变量覆盖这些配置，并且不要把真实密钥提交到仓库。
+本项目已将敏感配置（数据库密码、第三方 API Key）改为通过环境变量注入，仓库中的 `src/main/resources/application.yml` 仅保留占位符/默认值，不包含真实密钥。
+
+建议：不要把真实密钥写进仓库文件；本地请使用环境变量或本地 profile 配置文件。
 
 常用环境变量（Spring Boot 约定格式）：
 
@@ -146,8 +148,16 @@ Windows PowerShell 临时设置环境变量并启动（只对当前终端会话�
 
 ```powershell
 $env:SPRING_AI_ZHIPUAI_API_KEY = "你的新Key"
+$env:SPRING_DATASOURCE_URL = "jdbc:mysql://localhost:3306/llm_assistant?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false"
+$env:SPRING_DATASOURCE_USERNAME = "root"
 $env:SPRING_DATASOURCE_PASSWORD = "你的数据库密码"
 mvnw.cmd spring-boot:run
+```
+
+（可选）使用本地 profile 文件：复制 `src/main/resources/application-local.yml.example` 为 `src/main/resources/application-local.yml`，填入你的配置，然后用 profile 启动：
+
+```powershell
+mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 ---
