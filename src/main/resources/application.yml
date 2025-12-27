@@ -7,15 +7,14 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 50MB      # 🟢 单个文件最大限制 (比如改成 50MB)
-      max-request-size: 100MB  # 🟢 一次请求所有文件的总大小限制 (比如改成 100MB)
+      max-file-size: 50MB # 🟢 单个文件最大限制 (比如改成 50MB)
+      max-request-size: 100MB # 🟢 一次请求所有文件的总大小限制 (比如改成 100MB)
 
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/llm_assistant?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
     username: ${SPRING_DATASOURCE_USERNAME:root}
     password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
-
 
   ai:
     zhipuai:
@@ -28,7 +27,6 @@ spring:
   logging:
     level:
       org.springframework.ai: DEBUG
-
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
