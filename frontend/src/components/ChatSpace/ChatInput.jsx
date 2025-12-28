@@ -70,8 +70,8 @@ const ChatInput = ({
             className={`p-2 rounded-full transition-colors border ${
               isUploading
                 ? "bg-gray-100 cursor-wait"
-                : "hover:bg-gray-100 text-gray-500 hover:text-indigo-600 border-transparent"
-            }`}
+                : "hover:bg-gray-100 text-gray-500 hover:text-blue-600 border-transparent"
+            } focus:outline-none focus:ring-0`}
             title="上传文档 (支持多选)"
           >
             {/* 图标 */}
@@ -90,14 +90,14 @@ const ChatInput = ({
             </svg>
           </button>
         </div>
-        <div className="flex flex-1 gap-3 bg-gray-50 p-2 rounded-full border border-gray-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent transition-all">
+        <div className="flex flex-1 gap-3 bg-gray-50 p-2 rounded-full border border-gray-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all focus:border-none">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
             disabled={isLoading}
             placeholder="和我说点什么吧..."
-            className="flex-1 bg-transparent border-none focus:ring-0 px-4 py-2 text-gray-700 resize-none h-10 leading-6 placeholder-gray-400"
+            className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 px-4 py-2 text-gray-700 resize-none h-10 leading-6 placeholder-gray-400"
             rows={1}
           />
           <button
@@ -107,8 +107,8 @@ const ChatInput = ({
               ${
                 isLoading || !input?.trim()
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg transform active:scale-95"
-              }`}
+                  : "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transform active:scale-95"
+              } focus:outline-none focus:ring-0`}
           >
             {isLoading ? (
               <span className="flex items-center gap-2">

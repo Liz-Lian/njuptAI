@@ -20,7 +20,7 @@ function Files({ sessionFiles = [], handleDeleteFile }) {
       {sessionFiles.map((file) => (
         <div
           key={file.id}
-          className="bg-white border border-indigo-100 text-indigo-600 px-2 py-1 rounded-md text-xs flex items-center gap-1 shadow-sm"
+          className="bg-white border border-indigo-100 text-blue-600 px-2 py-1 rounded-md text-xs flex items-center gap-1 shadow-sm"
         >
           <svg
             className="w-3 h-3"

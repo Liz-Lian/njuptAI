@@ -1,4 +1,3 @@
-import User from "./User";
 
 function Header() {
   return (
@@ -9,7 +8,6 @@ function Header() {
           柚子 AI 助手
         </h1>
       </div>
-      <User />
     </header>
   );
 }

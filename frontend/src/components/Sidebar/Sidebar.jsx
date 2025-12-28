@@ -1,6 +1,5 @@
 import React from "react";
 import HistoryItem from "./HistoryItem";
-import User from "../User";
 
 // 接收 isOpen 属性，由父组件控制开还是关
 const Sidebar = ({
@@ -15,14 +14,14 @@ const Sidebar = ({
   return (
     <div
       className={`
-        bg-white border-r border-gray-200 h-full flex flex-col py-4 
+        bg-[#e9eef6] border-r border-gray-200 h-full flex flex-col py-4 
         transition-all duration-300 ease-in-out 
-         ${isSidebarOpen ? "w-64 px-4" : "w-14 px-2"} 
+         ${isSidebarOpen ? "w-72 px-4" : "w-14 px-2"} 
       `}
     >
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className={`p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none w-10 h-10 ${
+        className={`p-2 rounded-lg bg-transparent hover:bg-blue-100 text-gray-600 transition-colors focus:outline-none w-10 h-10 ${
           isSidebarOpen ? "-ml-2" : ""
         }`}
         title={isSidebarOpen ? "收起侧边栏" : "展开侧边栏"}
@@ -47,7 +46,7 @@ const Sidebar = ({
         <button
           onClick={onNewChat}
           className={`
-            flex items-center justify-center gap-2 hover:bg-gray-100 text-gray-600 
+            flex items-center justify-center gap-2 bg-blue-100/40 hover:bg-blue-200 text-gray-600 
             font-medium rounded-full transition-all duration-300 border border-gray-200 hover:border-gray-300 border-dashed hover:text-blue-600
             my-3 
             ${

@@ -41,8 +41,8 @@ function HistoryItem({
                 /* 选中高亮逻辑 */
                 ${
                   currentSessionId === item.id
-                    ? "bg-gray-100 text-gray-900 font-medium" // 选中历史
-                    : "text-gray-600 hover:bg-gray-50 hover:text-blue-600" // 没选中
+                    ? "bg-blue-100 text-[#0842a0] font-medium" // 选中历史
+                    : "text-gray-600 hover:bg-blue-100 hover:text-blue-600" // 没选中
                 }
               `}
       title={!isSidebarOpen ? item.title : ""}
@@ -66,7 +66,7 @@ function HistoryItem({
         <button
           type="button"
           onClick={handleDeleteClick}
-          className="ml-auto p-1 rounded-md text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-gray-100 hover:text-red-600 transition-opacity"
+          className="ml-auto p-1 rounded-full text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-white transition-opacity"
           title="删除会话"
         >
           <svg
