@@ -1,13 +1,36 @@
 function HistoryItem({
   item,
   onSelectSession,
+  onDeleteSession,
   isSidebarOpen,
   currentSessionId,
 }) {
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+
+    if (
+      !window.confirm(
+        "确定要删除这个会话吗？该操作将同时清理聊天记录和知识库数据。"
+      )
+    ) {
+      return;
+    }
+
+    if (onDeleteSession) {
+      onDeleteSession(item.id);
+    }
+  };
+
   return (
-    <button
-      key={item.id}
+    <div
       onClick={() => onSelectSession(item.id)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          onSelectSession(item.id);
+        }
+      }}
       className={`
                 w-full flex items-center rounded-lg text-sm transition-colors group
                 ${
@@ -38,7 +61,30 @@ function HistoryItem({
         />
       </svg>
       <span className="truncate">{item.title}</span>
-    </button>
+
+      {isSidebarOpen && (
+        <button
+          type="button"
+          onClick={handleDeleteClick}
+          className="ml-auto p-1 rounded-md text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-gray-100 hover:text-red-600 transition-opacity"
+          title="删除会话"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3m-4 0h14"
+            />
+          </svg>
+        </button>
+      )}
+    </div>
   );
 }
 

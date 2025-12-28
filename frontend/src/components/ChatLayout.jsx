@@ -17,6 +17,7 @@ const ChatLayout = ({
   historyList,
   onSelectSession,
   onNewChat,
+  onDeleteSession,
   currentSessionId,
   sessionFiles,
   onUploadSuccess,
@@ -62,6 +63,7 @@ const ChatLayout = ({
         onSelectSession={onSelectSession} // 点击事件
         onNewChat={onNewChat} // 新建事件
         currentSessionId={currentSessionId} // 当前选中的ID（用来高亮）
+        onDeleteSession={onDeleteSession}
       />
       <ChatSpace
         isSidebarOpen={isSidebarOpen}

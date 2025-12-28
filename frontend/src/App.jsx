@@ -93,6 +93,26 @@ function App() {
     setSessionFiles([]); // 清空文件列表
   };
 
+  // ✅ 3.1 删除会话
+  const handleDeleteSession = async (sid) => {
+    if (!sid) return;
+
+    try {
+      await apiClient.delete(`/chat/session/${sid}`);
+
+      // 更新侧边栏列表
+      setHistoryList((prev) => prev.filter((item) => item.id !== sid));
+
+      // 如果删除的是当前会话，重置到新会话
+      if (sid === sessionId) {
+        handleNewChat();
+      }
+    } catch (error) {
+      console.error("删除会话失败", error);
+      alert("删除会话失败");
+    }
+  };
+
   // ✅ 4. 发送消息
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -149,6 +169,7 @@ function App() {
       historyList={historyList}
       onSelectSession={handleSelectSession}
       onNewChat={handleNewChat}
+      onDeleteSession={handleDeleteSession}
       currentSessionId={sessionId}
       sessionFiles={sessionFiles} // 👈 传进去
       onUploadSuccess={handleUploadSuccess} // 👈 传进去

@@ -52,6 +52,33 @@ public class ChatController {
         return chatService.getSessionMessages(sessionId);
     }
 
+    // 4. ✅ 删除会话：清理向量库 + 文件表 + 聊天记录 + AI 上下文记忆
+    @DeleteMapping("/session/{sessionId}")
+    public Map<String, String> deleteSession(@PathVariable String sessionId) {
+        try {
+            // 1) 查询该会话下所有文件
+            List<SessionFile> files = sessionFileMapper.selectBySessionId(sessionId);
+
+            // 2) 先删除向量库数据
+            for (SessionFile file : files) {
+                ragService.deleteByFileId(file.getId());
+            }
+
+            // 3) 再删除文件表记录
+            for (SessionFile file : files) {
+                sessionFileMapper.deleteById(file.getId());
+            }
+
+            // 4) 最后清理聊天记录与 AI 记忆
+            chatService.deleteSession(sessionId);
+
+            return Map.of("status", "success", "message", "删除成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("status", "error", "message", "删除失败");
+        }
+    }
+
     @PostMapping("/upload")
     public Map<String, String> uploadFiles(
             @RequestParam("files") MultipartFile[] files,

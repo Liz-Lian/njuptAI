@@ -10,6 +10,7 @@ const Sidebar = ({
   onSelectSession,
   onNewChat,
   currentSessionId,
+  onDeleteSession,
 }) => {
   return (
     <div
@@ -97,6 +98,9 @@ const Sidebar = ({
               key={item.id}
               item={item}
               onSelectSession={onSelectSession}
+              onDeleteSession={onDeleteSession}
+              isSidebarOpen={isSidebarOpen}
+              currentSessionId={currentSessionId}
             />
           ))}
       </div>

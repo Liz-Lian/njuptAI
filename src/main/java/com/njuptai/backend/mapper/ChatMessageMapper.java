@@ -13,4 +13,6 @@ public interface ChatMessageMapper {
     List<ChatMessage> selectSessionList(Long userId);
     List<ChatMessage> selectBySessionId(String sessionId);
 
+    int deleteBySessionId(String sessionId);
+
 }
