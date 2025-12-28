@@ -62,6 +62,7 @@ public class ChatController {
         }
 
         int successCount = 0;
+
         try {
             for (MultipartFile file : files) {
                 // 1. ⏳ 先存入 MySQL，为了获取自增的 ID
@@ -75,19 +76,32 @@ public class ChatController {
                 sessionFileMapper.insert(sessionFile);
                 Long fileId = sessionFile.getId(); // 拿到 ID 了！
 
-                // 2. ⚡️ 再存入向量库 (传入刚才拿到的 fileId)
-                InputStreamResource resource = new InputStreamResource(file.getInputStream()) {
-                    @Override
-                    public String getFilename() { return file.getOriginalFilename(); }
-                };
+                try {
+                    // 2. ⚡️ 再存入向量库 (传入刚才拿到的 fileId)
+                    InputStreamResource resource = new InputStreamResource(file.getInputStream()) {
+                        @Override
+                        public String getFilename() {
+                            return file.getOriginalFilename();
+                        }
+                    };
 
-                // 调用 RagService
-                ragService.importDocument(resource, sessionId, fileId);
-
-                successCount++;
+                    // 调用 RagService
+                    ragService.importDocument(resource, sessionId, fileId);
+                    successCount++;
+                } catch (Exception ex) {
+                    // ✅ 如果向量入库失败，回滚刚插入的数据库记录，避免脏数据
+                    try {
+                        sessionFileMapper.deleteById(fileId);
+                    } catch (Exception rollbackEx) {
+                        rollbackEx.printStackTrace();
+                    }
+                    ex.printStackTrace();
+                    return Map.of("status", "error", "message", "上传失败");
+                }
             }
+
             return Map.of("status", "success", "message", "上传成功", "sessionId", sessionId);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return Map.of("status", "error", "message", "上传失败");
         }

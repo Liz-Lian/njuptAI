@@ -26,17 +26,10 @@ public class ChatService {
     private final VectorStore vectorStore;
 
     // 构造函数
-    public ChatService(ChatClient.Builder builder, ChatMessageMapper chatMessageMapper, VectorStore vectorStore, SessionFileMapper sessionFileMapper) {
+    public ChatService(ChatClient.Builder builder, ChatMessageMapper chatMessageMapper, VectorStore vectorStore, SessionFileMapper sessionFileMapper, ChatMemory chatMemory) {
         this.chatMessageMapper = chatMessageMapper;
         this.sessionFileMapper = sessionFileMapper;
         this.vectorStore = vectorStore;
-
-        // 1. 按照官方文档：构建一个“消息窗口记忆”，默认保存在内存里
-        // maxMessages(10) 表示只保留最近 10 条记录，防止 token 爆炸
-        ChatMemory chatMemory = MessageWindowChatMemory.builder()
-                .maxMessages(10)
-                .build();
-
 
         this.chatClient = builder
                 .defaultSystem("你是一个乐于助人的AI助手，名字叫柚子，专注于帮助用户解决各种问题，请用中文回答")

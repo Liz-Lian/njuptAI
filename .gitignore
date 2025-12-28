@@ -35,3 +35,6 @@ build/
 ### Local secrets / overrides ###
 src/main/resources/application-local.yml
 src/main/resources/application-secret.yml
+
+### Vector store persistence ###
+vectorstore.json

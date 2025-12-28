@@ -4,11 +4,15 @@ package com.njuptai.backend.service;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
+import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +22,11 @@ public class RagService {
 
     public RagService(VectorStore vectorStore) {
         this.vectorStore = vectorStore;
+    }
+
+    private File getVectorStoreFile() {
+        Path projectRoot = Paths.get(System.getProperty("user.dir"));
+        return projectRoot.resolve("vectorstore.json").toFile();
     }
 
 
@@ -40,6 +49,16 @@ public class RagService {
         }
 
         vectorStore.add(splitDocuments);
+
+        if (vectorStore instanceof SimpleVectorStore simpleStore) {
+            File file = getVectorStoreFile();
+            try {
+                simpleStore.save(file);
+            } catch (Exception e) {
+                System.err.println("⚠️ 向量库持久化保存失败（add 后）: " + file.getAbsolutePath());
+                e.printStackTrace();
+            }
+        }
         System.out.println("✅ 已存入文件，Tag: [session=" + sessionId + ", file=" + fileId + "]");
     }
 
@@ -68,6 +87,17 @@ public class RagService {
         // 4. 调用支持的 delete(List<String> ids) 接口
         if (!ids.isEmpty()) {
             vectorStore.delete(ids);
+
+            if (vectorStore instanceof SimpleVectorStore simpleStore) {
+                File file = getVectorStoreFile();
+                try {
+                    simpleStore.save(file);
+                } catch (Exception e) {
+                    System.err.println("⚠️ 向量库持久化保存失败（delete 后）: " + file.getAbsolutePath());
+                    e.printStackTrace();
+                }
+            }
+
             System.out.println("✅ 已物理删除文件[" + fileId + "] 的 " + ids.size() + " 条向量切片");
         } else {
             System.out.println("⚠️ 未找到文件[" + fileId + "] 的向量数据，可能已经被删除了");
