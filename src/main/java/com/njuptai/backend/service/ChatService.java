@@ -25,7 +25,7 @@ public class ChatService {
     private final VectorStore vectorStore;
     private final ChatMemory chatMemory;
 
-    // 构造函数
+    // 依赖注入（由 Spring 构造）
     public ChatService(ChatClient.Builder builder, ChatMessageMapper chatMessageMapper, VectorStore vectorStore, SessionFileMapper sessionFileMapper, ChatMemory chatMemory) {
         this.chatMessageMapper = chatMessageMapper;
         this.sessionFileMapper = sessionFileMapper;
@@ -39,7 +39,7 @@ public class ChatService {
     }
 
     /**
-     * 🗑️ 删除会话：清空 AI 上下文记忆 + 删除数据库聊天记录
+     * 删除会话数据：清空该会话的对话记忆，并删除持久化的聊天记录。
      */
     public void deleteSession(String sessionId) {
         chatMemory.clear(sessionId);
@@ -47,25 +47,25 @@ public class ChatService {
     }
 
     /**
-     * 核心业务逻辑
+     * 会话与消息查询。
      */
-    // ✅ 获取历史列表
+    // 获取历史会话列表（用于侧边栏展示）
     public List<ChatMessage> getHistoryList(Long userId) {
         return chatMessageMapper.selectSessionList(userId);
     }
 
-    // ✅ 获取某次对话详情
+    // 获取指定会话的消息列表
     public List<ChatMessage> getSessionMessages(String sessionId) {
         return chatMessageMapper.selectBySessionId(sessionId);
     }
 
-    // ✅ 新增：获取当前会话的文件列表
+    // 获取指定会话关联的文件列表
     public List<SessionFile> getSessionFiles(String sessionId) {
         return sessionFileMapper.selectBySessionId(sessionId);
     }
 
     public ChatResponse chat(Long userId, String sessionId, String userMessage) {
-        // 如果前端没传 sessionId (是新对话)，就生成一个新的 UUID
+        // 新会话：前端未传 sessionId 时由后端生成
         if (sessionId == null || sessionId.isEmpty()) {
             sessionId = java.util.UUID.randomUUID().toString();
         }
@@ -74,8 +74,7 @@ public class ChatService {
 
         String filter = "sessionId == '" + sessionId + "'";
 
-        // ✅ 自定义 RAG 提示词模板 (防止 AI 用英文回复 context)
-// 1. 定义新的 PromptTemplate
+        // RAG 提示词模板：约束回答风格与“资料缺失时”的行为
         PromptTemplate customPromptTemplate = PromptTemplate.builder()
                 // 使用默认的 { } 定界符即可，或者按文档用 .renderer() 自定义
                 .template("""
@@ -92,20 +91,20 @@ public class ChatService {
                 """)
                 .build();
 
-        // 2. 将其注入到 Advisor 中
+            // 将模板注入到 QuestionAnswerAdvisor，用于基于向量检索结果生成回答
         String aiResponse = chatClient.prompt()
                 .user(userMessage)
                 .advisors(a -> a
                         .param(ChatMemory.CONVERSATION_ID, conversationId)
                         .param(QuestionAnswerAdvisor.FILTER_EXPRESSION, filter)
                         .advisors(QuestionAnswerAdvisor.builder(vectorStore)
-                                .promptTemplate(customPromptTemplate) // ✅ 使用新版推荐方法
+                        .promptTemplate(customPromptTemplate)
                                 .build())
                 )
                 .call()
                 .content();
 
-        // 3. 存档到 MySQL (这部分逻辑不变，为了持久化存储)
+            // 将本轮对话落库，便于历史会话回放
         ChatMessage message = ChatMessage.builder()
                 .userId(userId)
                 .sessionId(sessionId)

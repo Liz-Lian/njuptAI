@@ -31,8 +31,9 @@ public class RagService {
 
 
     /**
-     * 📥 导入文档
-     * @param fileId  关键修改：传入数据库里的文件ID，用来做唯一标记
+        * 导入文档到向量库，并为后续按会话/文件维度检索与删除写入元数据标签。
+        *
+        * @param fileId 数据库中的文件记录 ID，用作向量切片的唯一关联标识
      */
     public void importDocument(Resource resource, String sessionId, Long fileId) {
         TikaDocumentReader reader = new TikaDocumentReader(resource);
@@ -41,10 +42,10 @@ public class RagService {
         TokenTextSplitter splitter = new TokenTextSplitter(300, 100, 5, 10000, true);
         List<Document> splitDocuments = splitter.apply(documents);
 
-        // 🏷️ 打标签：给每个碎片贴上 sessionId 和 fileId
+        // 为每个切片写入元数据，便于过滤检索与按文件删除
         for (Document doc : splitDocuments) {
             doc.getMetadata().put("sessionId", sessionId);
-            // 注意：为了 Filter 表达式匹配方便，建议转成 String 存储
+            // Filter 表达式以字符串比较为主，这里统一按 String 存储
             doc.getMetadata().put("fileId", String.valueOf(fileId));
         }
 
@@ -63,28 +64,28 @@ public class RagService {
     }
 
     /**
-     * 🗑️ 修复版删除：先搜 ID，再删 ID
+         * 删除指定文件对应的向量切片。
+         *
+         * 说明：部分 VectorStore 实现需要先检索出文档 ID，再按 ID 批量删除。
      */
     public void deleteByFileId(Long fileId) {
-        // 1. 构造检索请求：虽然我们要删的是 vector，但 SimpleVectorStore 必须要先搜出来
-        // 我们用一个空格作为 query，重点是后面的 filterExpression
-        // ✅ 新写法 (Builder 模式):
+        // 构造检索请求：通过 filterExpression 命中文档，query 使用占位内容即可
         SearchRequest request = SearchRequest.builder()
-                .query(" ") // 搜索内容为空，只为了匹配 Filter
-                .filterExpression("fileId == '" + fileId + "'") // 过滤条件
-                .topK(10000) // 尽量多搜一点，确保删干净
-                .similarityThreshold(0.0) // 相似度阈值设为0
+            .query(" ") // 占位查询内容，主要依赖 filterExpression 过滤
+            .filterExpression("fileId == '" + fileId + "'")
+            .topK(10000) // 预期最多切片数量；取大一些以尽量覆盖
+            .similarityThreshold(0.0)
                 .build();
 
-        // 2. 执行搜索
+        // 执行搜索
         List<Document> documents = vectorStore.similaritySearch(request);
 
-        // 3. 提取所有切片的 ID
+        // 提取切片 ID
         List<String> ids = documents.stream()
                 .map(Document::getId)
                 .collect(Collectors.toList());
 
-        // 4. 调用支持的 delete(List<String> ids) 接口
+        // 按 ID 批量删除
         if (!ids.isEmpty()) {
             vectorStore.delete(ids);
 

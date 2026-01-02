@@ -4,11 +4,11 @@ import ChatLayout from "./components/ChatLayout";
 
 function App() {
   const [input, setInput] = useState("");
-  // 当前的会话 ID (如果是 null 表示正在新建)
+  // 当前会话 ID（为 null 表示尚未建立会话）
   const [sessionId, setSessionId] = useState(null);
   const [sessionFiles, setSessionFiles] = useState([]);
 
-  // 当前显示的消息列表
+  // 当前渲染的消息列表
   const [messages, setMessages] = useState([
     {
       role: "ai",
@@ -21,7 +21,7 @@ function App() {
   // 侧边栏的会话列表数据
   const [historyList, setHistoryList] = useState([]);
 
-  // ✅ 1. 初始化加载历史会话列表
+  // 初始化：加载历史会话列表
   const fetchHistory = async () => {
     try {
       const res = await apiClient.get("/chat/history");
@@ -51,7 +51,7 @@ function App() {
 
   useEffect(() => {
     fetchHistory();
-  }, [messages]); // 每当发完消息，重新刷新一下列表（把最新的置顶）
+  }, [messages]); // messages 变化后刷新侧边栏（保证最新会话置顶）
 
   useEffect(() => {
     fetchSessionFiles(sessionId);
@@ -59,14 +59,14 @@ function App() {
 
   const handleUploadSuccess = (sid) => {
     if (sessionId !== sid) {
-      // 如果是新对话生成的 ID，先切换过去
+      // 新会话首次上传可能会生成 sid，这里切换到对应会话
       handleSelectSession(sid);
     }
     // 刷新文件列表
     fetchSessionFiles(sid);
   };
 
-  // ✅ 2. 切换会话 (点击侧边栏)
+  // 切换会话（点击侧边栏）
   const handleSelectSession = async (sid) => {
     setSessionId(sid);
     setIsLoading(true);
@@ -86,14 +86,14 @@ function App() {
     }
   };
 
-  // ✅ 3. 新建对话
+  // 新建对话
   const handleNewChat = () => {
     setSessionId(null); // 清空 ID，表示新会话
     setMessages([{ role: "ai", content: "你好！这是一个新的开始。🌸" }]);
     setSessionFiles([]); // 清空文件列表
   };
 
-  // ✅ 3.1 删除会话
+  // 删除会话
   const handleDeleteSession = async (sid) => {
     if (!sid) return;
 
@@ -113,7 +113,7 @@ function App() {
     }
   };
 
-  // ✅ 4. 发送消息
+  // 发送消息
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -147,9 +147,9 @@ function App() {
     }
   };
 
-  // ✅ 回调：当文件上传或删除成功时，刷新列表
+  // 文件变更回调：上传/删除成功后刷新列表
   const handleFileUpdate = (sid) => {
-    // 如果是新会话生成的 ID，先切换 ID
+    // 新会话首次上传可能会生成 sid，这里同步会话状态并刷新侧边栏
     if (sid && sid !== sessionId) {
       setSessionId(sid);
       fetchHistory(); // 刷新侧边栏
@@ -171,8 +171,8 @@ function App() {
       onNewChat={handleNewChat}
       onDeleteSession={handleDeleteSession}
       currentSessionId={sessionId}
-      sessionFiles={sessionFiles} // 👈 传进去
-      onUploadSuccess={handleUploadSuccess} // 👈 传进去
+      sessionFiles={sessionFiles} // 会话文件列表
+      onUploadSuccess={handleUploadSuccess} // 上传成功回调
       onFileDeleted={handleFileUpdate} // 删除成功回调
     />
   );

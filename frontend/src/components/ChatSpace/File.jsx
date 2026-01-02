@@ -20,7 +20,7 @@ function File({ file, handleDeleteFile }) {
       <span className="max-w-[150px] truncate" title={file.fileName}>
         {file.fileName}
       </span>
-      {/* 🗑️ 删除按钮 */}
+      {/* 删除按钮 */}
       <button
         onClick={() => handleDeleteFile(file.id)}
         className="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5 transition-colors"

@@ -1,7 +1,7 @@
 import React from "react";
 import HistoryItem from "./HistoryItem";
 
-// 接收 isOpen 属性，由父组件控制开还是关
+// 侧边栏组件：开合状态由父组件控制
 const Sidebar = ({
   isSidebarOpen,
   setIsSidebarOpen,
@@ -26,7 +26,7 @@ const Sidebar = ({
         }`}
         title={isSidebarOpen ? "收起侧边栏" : "展开侧边栏"}
       >
-        {/* 图标会根据状态稍微变一下，或者一直用这个汉堡图标 */}
+        {/* 折叠/展开按钮 */}
         <svg
           className="w-6 h-6 "
           fill="none"
@@ -41,7 +41,7 @@ const Sidebar = ({
           />
         </svg>
       </button>
-      {/* 内部容器：设置 min-w-64 防止文字换行导致的排版崩坏 */}
+      {/* 内部容器：通过最小宽度避免换行影响布局 */}
       <div className=" flex justify-center">
         <button
           onClick={onNewChat}
@@ -49,9 +49,7 @@ const Sidebar = ({
             flex items-center justify-center gap-2 bg-blue-100/40 hover:bg-blue-200 text-gray-600 
             font-medium rounded-full transition-all duration-300 border border-gray-200 hover:border-gray-300 border-dashed hover:text-blue-600
             my-3 
-            ${
-              isSidebarOpen ? "w-full py-3 px-4" : "w-10 h-10 "
-            } /* 收起时变成圆钮 */
+            ${isSidebarOpen ? "w-full py-3 px-4" : "w-10 h-10 "}
           `}
           title="新建对话"
         >
@@ -69,7 +67,7 @@ const Sidebar = ({
             />
           </svg>
 
-          {/* 文字部分：收起时隐藏，并且不占位 (w-0 overflow-hidden) */}
+          {/* 文字部分：收起时隐藏 */}
           {isSidebarOpen && (
             <span
               className={`whitespace-nowrap overflow-hidden transition-all duration-100 

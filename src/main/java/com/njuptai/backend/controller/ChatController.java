@@ -33,43 +33,43 @@ public class ChatController {
     @PostMapping("/send")
     public ChatResponse chat(@RequestBody Map<String, String> payload) {
         String message = payload.get("message");
-        String sessionId = payload.get("sessionId"); // ✅ 接收前端传来的 sessionId
+        String sessionId = payload.get("sessionId"); // 可为空：新会话由后端生成
         Long userId = 1L;
 
         return chatService.chat(userId, sessionId, message);
     }
 
-    // 2. ✅ 获取会话列表接口
+    // 获取会话列表
     @GetMapping("/history")
     public List<ChatMessage> getHistory() {
         Long userId = 1L;
         return chatService.getHistoryList(userId);
     }
 
-    // 3. ✅ 获取某个会话详情接口
+    // 获取指定会话的消息详情
     @GetMapping("/session/{sessionId}")
     public List<ChatMessage> getSessionDetail(@PathVariable String sessionId) {
         return chatService.getSessionMessages(sessionId);
     }
 
-    // 4. ✅ 删除会话：清理向量库 + 文件表 + 聊天记录 + AI 上下文记忆
+    // 删除会话：删除向量切片与文件记录，并清理聊天记录与会话记忆
     @DeleteMapping("/session/{sessionId}")
     public Map<String, String> deleteSession(@PathVariable String sessionId) {
         try {
-            // 1) 查询该会话下所有文件
+            // 查询会话下的文件列表
             List<SessionFile> files = sessionFileMapper.selectBySessionId(sessionId);
 
-            // 2) 先删除向量库数据
+            // 删除向量库中与文件关联的切片
             for (SessionFile file : files) {
                 ragService.deleteByFileId(file.getId());
             }
 
-            // 3) 再删除文件表记录
+            // 删除文件表记录
             for (SessionFile file : files) {
                 sessionFileMapper.deleteById(file.getId());
             }
 
-            // 4) 最后清理聊天记录与 AI 记忆
+            // 清理聊天记录与会话记忆
             chatService.deleteSession(sessionId);
 
             return Map.of("status", "success", "message", "删除成功");
@@ -92,19 +92,19 @@ public class ChatController {
 
         try {
             for (MultipartFile file : files) {
-                // 1. ⏳ 先存入 MySQL，为了获取自增的 ID
+            // 先写入文件记录以获取 fileId（用于向量切片关联）
                 SessionFile sessionFile = SessionFile.builder()
                         .sessionId(sessionId)
                         .fileName(file.getOriginalFilename())
                         .createTime(LocalDateTime.now())
                         .build();
 
-                // 执行 insert 后，MyBatis 会把生成的 ID 回填到 sessionFile 对象里
+            // insert 后 MyBatis 会将自增主键回填到 sessionFile.id
                 sessionFileMapper.insert(sessionFile);
-                Long fileId = sessionFile.getId(); // 拿到 ID 了！
+            Long fileId = sessionFile.getId();
 
                 try {
-                    // 2. ⚡️ 再存入向量库 (传入刚才拿到的 fileId)
+                    // 写入向量库（传入刚获取的 fileId 用于关联与删除）
                     InputStreamResource resource = new InputStreamResource(file.getInputStream()) {
                         @Override
                         public String getFilename() {
@@ -116,7 +116,7 @@ public class ChatController {
                     ragService.importDocument(resource, sessionId, fileId);
                     successCount++;
                 } catch (Exception ex) {
-                    // ✅ 如果向量入库失败，回滚刚插入的数据库记录，避免脏数据
+                    // 若向量入库失败，则回滚文件记录，避免遗留无效数据
                     try {
                         sessionFileMapper.deleteById(fileId);
                     } catch (Exception rollbackEx) {
@@ -134,14 +134,14 @@ public class ChatController {
         }
     }
 
-    // 删除接口也变得超级简单
+    // 删除单个文件：先删向量切片，再删文件记录
     @DeleteMapping("/files/{id}")
     public Map<String, String> deleteFile(@PathVariable Long id) {
         try {
-            // 1. 调用 RagService 根据 ID 删除向量
+            // 删除向量切片
             ragService.deleteByFileId(id);
 
-            // 2. 删除数据库记录
+            // 删除数据库记录
             sessionFileMapper.deleteById(id);
 
             return Map.of("status", "success", "message", "删除成功");
@@ -150,7 +150,8 @@ public class ChatController {
             return Map.of("status", "error", "message", "删除失败");
         }
     }
-    // ✅ 新增接口：获取某会话的文件列表
+
+    // 获取会话关联的文件列表
     @GetMapping("/files")
     public List<SessionFile> getSessionFiles(@RequestParam("sessionId") String sessionId) {
         return sessionFileMapper.selectBySessionId(sessionId);

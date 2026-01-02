@@ -19,7 +19,7 @@ const ChatInput = ({
     }
   };
 
-  // 📤 处理多文件上传
+  // 多文件上传
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -27,7 +27,7 @@ const ChatInput = ({
     setIsUploading(true);
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
-    // 👇 把当前的 sessionId 传给后端 (如果是 null 也没事，后端会生成)
+    // 传递当前 sessionId；为空时由后端生成新会话 ID
     formData.append("sessionId", sessionId || "");
 
     try {
@@ -35,11 +35,11 @@ const ChatInput = ({
       const res = await apiClient.post("/chat/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      // 🎉 如果后端返回了新的 sessionId (说明是新对话首次上传)，通知父组件更新
+      // 新会话首次上传可能会生成新的 sessionId，这里通知父组件更新
       if (res.data.sessionId && res.data.sessionId !== sessionId) {
         onUploadSuccess(res.data.sessionId);
       } else {
-        onUploadSuccess(sessionId); // 只是刷新文件列表
+        onUploadSuccess(sessionId); // 仅刷新文件列表
       }
       alert("上传成功！");
     } catch (error) {
@@ -47,22 +47,22 @@ const ChatInput = ({
       alert("上传失败，请检查文件大小限制。");
     } finally {
       setIsUploading(false);
-      e.target.value = null; // 清空，允许重复传
+      e.target.value = null; // 重置 input，允许重复选择同一文件
     }
   };
 
   return (
     <div className="p-4 bg-white/80 backdrop-blur-md border-t border-gray-100 w-full">
       <div className="max-w-3xl mx-auto flex gap-3 items-center">
-        {/* 📎 按钮 */}
+        {/* 上传按钮 */}
         <div className="relative">
           <input
             type="file"
             ref={fileInputRef}
             onChange={handleFileUpload}
             className="hidden"
-            multiple // ✅ 允许 Ctrl 多选
-            accept=".pdf,.docx,.doc,.txt,.md,.json,.pptx,.xlsx" // ✅ 允许各种格式
+            multiple // 支持多选
+            accept=".pdf,.docx,.doc,.txt,.md,.json,.pptx,.xlsx" // 允许的文件类型
           />
           <button
             onClick={() => fileInputRef.current?.click()}
